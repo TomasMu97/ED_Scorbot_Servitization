@@ -1,0 +1,6 @@
+.vscode/
+build/
+json/
+mosquitto/
+lib/
+script_log.txt
