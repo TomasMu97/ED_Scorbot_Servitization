@@ -4,7 +4,7 @@
 - [Repository folders](#repository-folders)
 - [Mosquitto and dependences cross-compilation](#mosquitto-and-dependences-cross-compilation)
 
-# RobotAnno
+# EDScorbot
 This repository contains the source code for a spike-based controller for the ED-Scorbot robotics platform. This controller has been implemented for hardware using VHDL rtl languaje. This controller module has been tested and deployed on a Zynq 7100 Xilinx platform called Zynq MMP board. The Rbtanno controller module can be configured from an user application through an AXI-4 module.
 
 
