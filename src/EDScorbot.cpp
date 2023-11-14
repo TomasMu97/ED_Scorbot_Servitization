@@ -310,57 +310,61 @@ void EDScorbot::readJoints(double* ret){
 // Polarities per joint are: 1,-1,-1,-1,-1,-1
 void EDScorbot::searchHome(EDScorbotJoint j, bool v=false)
 {
-    // Un poco mas rapido
-    int pol = (j.jnum < 4 ? 1 : -1);
-
-    int old_sj = 0x20000 / 4; // 32768
-    int sj = 0x20000 / 4;     // 32768
-    int addr_j = 0x02;        // 2
+    if (v)
+    puts("Preparing variables...");
+    //INICIALIZACION DE VARIABLES
+    int pol = (j.jnum < 4 ? 1 : -1); // Declarar array de polaridades
+    int old_sj = 0x20000 / 4; // Inicializar contador a 32768
+    int sj = 0x20000 / 4;     // Inicializar contador a 32768
+    int addr_j = 0x02;        // Registro de movimiento de joints Creo que esto no hace falta
     int inc_j = -50 * pol;
-
     int data = 0x00000000 | 0xF7 << 16 | 0xff << 8 | 0xff; // enable counter reset when microswitch is hit
     this->bram_ptr[0] = data;
 
-    // El joint a 50/-50
+    //FASE 1: PRIMER SALTO
     sendRef(inc_j, j);
     usleep(2000000);
     sj = this->bram_ptr[j.jnum]; // lectura de posicion
+
+    //FASE 2: BUSQUEDA DEL FINAL DE CARRERA
     if (v)
-        puts("while1");
-    while (abs(sj - old_sj) != 0) //Buscar final de carrera
+        puts("Taking joint to its end...");
+    while (abs(sj - old_sj) != 0) //El bucle se ejecuta siempre que la diferencia entre estados sea mayor a cero
     {
-        inc_j = inc_j - angle_to_ref(j.jnum,-20) * pol;
+        inc_j = inc_j - angle_to_ref(j.jnum,-20) * pol; //Saltos de 20 DEG
         sendRef(inc_j, j);
         usleep(2000000);
-        old_sj = sj;
-        sj = this->bram_ptr[j.jnum];
-        std::cout << "sj: " << sj << ";   old_sj: " << old_sj << std::endl; //Controlar la diferencia de contadores no funciona con j4.
+        old_sj = sj; //Actualizar contador con el estado actual
+        sj = this->bram_ptr[j.jnum]; //Leer contador
+
         if ((abs(sj - old_sj) < 0x5)) //Llegada a final de carrera
-        //if (abs(sj - old_sj) < 0x5)
             break;
     }
+
     if (v)
-        puts("configureinit");
+        puts("Configuring joint counters...");
     configureInitJoint(j); // En java y python la llamada es a SendFPGAReset_joint
     resetJPos(j);
+
+    //FASE 3: SALTO PARA ACERCARSE AL CENTRO
     if (v)
-        puts("switch");
+        puts("Taking joint near home position...");
     switch (j.jnum) //Salto grande a mas o menos el centro
     {
     case 1:
-        inc_j = 300 * pol;
+        inc_j = angle_to_ref(j.jnum,-90) * pol;
         sendRef(inc_j, j1);
         break;
     case 2:
-        inc_j = 550 * pol;
+        inc_j = angle_to_ref(j.jnum,-50) * pol;
         sendRef(inc_j, j2);
         break;
     case 3:
-        inc_j = 300 * pol;
+        inc_j = angle_to_ref(j.jnum,-90) * pol;
         sendRef(inc_j, j3);
         break;
     case 4:
-        inc_j = 1000 * pol;
+        inc_j = angle_to_ref(j.jnum,-70) * pol;
         sendRef(inc_j, j4);
         break;
     default:
@@ -368,20 +372,20 @@ void EDScorbot::searchHome(EDScorbotJoint j, bool v=false)
     }
     usleep(10000000); //wait for 10 seconds
     sj = this->bram_ptr[j.jnum];
-    old_sj = sj + 1000;
+    old_sj = sj + 1000; //Crear una diferencia para dejar que el PID actúe
     if (v)
-        puts("while2");
-    while (abs(old_sj - sj) > 200) //Ni idea de qué hace esto
+        puts("Adjusting...");
+    while (abs(old_sj - sj) > 200) //Dejar que el PID actúe
     {
         old_sj = sj;
         sj = this->bram_ptr[j.jnum];
         usleep(1000000);
     }
     if (v)
-        puts("while3");
+        puts("Searching home position...");
     while (abs(sj - (0x20000 / 4)) > 0x400)
     {
-        inc_j = inc_j + (angle_to_ref(j.jnum,-2) * pol); //make small jumps of -3 DEG
+        inc_j = inc_j + (angle_to_ref(j.jnum,-2) * pol); //make small jumps of 2 DEG
         sendRef(inc_j, j);
         usleep(2000000);
         old_sj = sj;

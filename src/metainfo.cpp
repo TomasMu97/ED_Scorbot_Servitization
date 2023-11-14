@@ -34,6 +34,7 @@ MetaInfoObject initial_metainfo()
     j4.name = "J4";
     result.mi_joints.push_back(j4);
 
+    //Las ultimas 2 joints no se usan
 
     JointInfo j5 = JointInfo();
     j5.minimum = -180; //Limit

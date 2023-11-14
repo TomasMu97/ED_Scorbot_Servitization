@@ -69,13 +69,13 @@ void* search_home_threaded_function(void* arg){
   //putenv("HOME_EXEC=1");
 
   //puts("J3");
-  handler.searchHome(handler.j3,true);
+  handler.searchHome(handler.j3,false);
   //puts("J2");
-  handler.searchHome(handler.j2,true);
+  handler.searchHome(handler.j2,false);
   //puts("J1");
-  handler.searchHome(handler.j1,true);
+  handler.searchHome(handler.j1,false);
 
-  handler.searchHome(handler.j4,true);
+  handler.searchHome(handler.j4,false);
 
   //puts("Waiting for PID to stabilize");
   usleep(15000000);
