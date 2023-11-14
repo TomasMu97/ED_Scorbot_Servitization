@@ -337,7 +337,7 @@ void EDScorbot::searchHome(EDScorbotJoint j, bool v=false)
         old_sj = sj; //Actualizar contador con el estado actual
         sj = this->bram_ptr[j.jnum]; //Leer contador
 
-        if ((abs(sj - old_sj) < 0x5)) //Llegada a final de carrera
+        if (abs(sj - old_sj) < 0x5) //Llegada a final de carrera
             break;
     }
 
